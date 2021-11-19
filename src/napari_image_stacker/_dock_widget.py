@@ -1,95 +1,37 @@
 """
-This module is an example of a barebones QWidget plugin for napari
+This module contains the Image Stacker Widget functionality
 
 It implements the ``napari_experimental_provide_dock_widget`` hook specification.
 see: https://napari.org/docs/dev/plugins/hook_specifications.html
 
-Replace code below according to your needs.
 """
-import napari
 from napari import Viewer
-from napari.layers import Layer, Image
 from napari.layers.utils.stack_utils import images_to_stack, stack_to_images
 
 from napari_plugin_engine import napari_hook_implementation
 
-from qtpy.QtWidgets import QMessageBox
 from magicgui import magic_factory
 
 from collections import Counter
-#to test
-#import datetime
-#import pathlib
 
-
-# class QImageStackerWidget(QWidget):
-#     # your QWidget.__init__ can optionally request the napari viewer instance
-#     # in one of two ways:
-#     # 1. use a parameter called `napari_viewer`, as done here
-#     # 2. use a type annotation of 'napari.viewer.Viewer' for any parameter
-#     def __init__(self, napari_viewer):
-#         super().__init__()
-#         self.viewer = napari_viewer
-#         n_images = len(self.viewer.layers)
-        
-#         visible_chkbx = QCheckBox("return visible?")
-#         visible_chkbx.setChecked(False)
-#         img2stack_btn = QPushButton("All open images to stack")
-#         img2stack_btn.clicked.connect(self._on_click_i2s_button)
-#         stack2img_btn = QPushButton("All open stacks to images")
-#         stack2img_btn.clicked.connect(self._on_click_s2i_button)
-
-#         self.setLayout(QHBoxLayout())
-#         self.layout().addWidget(img2stack_btn)
-#         self.layout().addWidget(stack2img_btn)
-#         self.layout().addWidget(visible_chkbx)
-
-#     def _on_click_i2s_button(self):
-#         layers = self.viewer.layers
-#         valid = [layer for layer in layers 
-#                  if (layer.data.ndim == 2 and not layer.rgb)]
-#         print(f"Converting all {len(valid)} open images to a stack")
-#         #viewer.
-        
-#     def _on_click_s2i_button(self):
-#         layers = self.viewer.layers
-#         valid = [layer for layer in layers 
-#                  if (layer.data.ndim == 2 and not layer.rgb)]
-#         print(f"Converting all {len(valid)} open images to a stack")
-
-
-# # @magic_factory(
-# #     call_button="Calculate",
-# #     slider_float={"widget_type": "FloatSlider", 'max': 10},
-# #     dropdown={"choices": ['first', 'second', 'third']},
-# # )
-
-# # def widget_demo(
-# #     maybe: bool,
-# #     some_int: int,
-# #     spin_float=3.14159,
-# #     slider_float=4.5,
-# #     string="Text goes here",
-# #     dropdown='first',
-# #     date=datetime.datetime.now(),
-# #     filename=pathlib.Path('/some/path.ext')
-# # ):
-# #     widget_demo.show()
 
 
 @magic_factory(
-    call_button="Convert",
-    To_convert={"choices": ["Auto-detect", "Selection"]},
-    Convert_from={"choices": ["Images to Stack", "Stack to Images"]}
+    call_button='Convert',
+    To_convert={"choices": ["Auto-detect", "Selection"], 'tooltip': 'Use all suitable layers or only selected layers (highlighted in layer list)'},
+    From_visible={'tooltip':"Use only visible layers ('bright eye' in layer list)"},
+    To_visible={'tooltip':" Resulting layer(s) are visible"},
+    Remove_original_image={'tooltip':"Remove the used layer(s) after conversion"},
+    Convert_from={"choices": ["Images to Stack", "Stack to Images"],"tooltip":"Split stack(s) into images or concatenate images into stack(s)"}, 
     )
 
-def ImageStackerWidget(viewer: Viewer,
-                       To_convert="Auto-detect",
-                       From_visible : bool=True,
-                       To_visible : bool=False,
-                       Remove_original_image : bool=False,
-                       Convert_from="Images to Stack",
-                       ):
+def image_stacker_widget(viewer: Viewer,
+                         To_convert="Auto-detect",
+                         From_visible: bool=True,
+                         To_visible: bool=False,
+                         Remove_original_image: bool=False,
+                         Convert_from="Images to Stack",
+                         ):
     
     #defines whether output will be visible or not
     meta = {"visible": To_visible}
@@ -119,10 +61,10 @@ def ImageStackerWidget(viewer: Viewer,
     
     #extract shapes, dimensions and rgb flags to decide which of the layers 
     #can be concatenated into a stack
-    try:
+    if len(layers):
         shapes, dimensions, rgb = zip(*[(l.data.shape, l.data.ndim, l.rgb) 
                                         for l in layers])
-    except:
+    else:
         message = "No convertible images found"
         print(message)
         return
@@ -164,7 +106,7 @@ def ImageStackerWidget(viewer: Viewer,
                       if ((r and d>3) or (not r and d>2))]
         
         if not len(candidates):
-            print("We did not find multiple same-shaped images to convert.")
+            print("We did not find stacks to convert.")
             return
         
         #for each stack return single images
@@ -196,4 +138,4 @@ def ImageStackerWidget(viewer: Viewer,
 
 @napari_hook_implementation
 def napari_experimental_provide_dock_widget():
-    return ImageStackerWidget
+    return image_stacker_widget

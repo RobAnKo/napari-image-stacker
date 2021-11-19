@@ -37,6 +37,7 @@ To install latest development version :
 ## Contributing
 
 tbd
+
 #Contributions are very welcome. Tests can be run with [tox], please ensure
 #the coverage at least stays the same before you submit a pull request.
 
@@ -48,6 +49,7 @@ Distributed under the terms of the [MIT] license,
 ## Issues
 
 tbd
+
 #If you encounter any problems, please [file an issue] along with a detailed description.
 
 [napari]: https://github.com/napari/napari

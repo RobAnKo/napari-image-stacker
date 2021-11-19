@@ -25,7 +25,7 @@ https://napari.org/docs/plugins/index.html
 
 You can not yet install `napari-image-stacker` via [pip]:
 
-#   pip install napari-image-stacker
+<!--    pip install napari-image-stacker -->
 
 
 
@@ -38,8 +38,8 @@ To install latest development version :
 
 tbd
 
-#Contributions are very welcome. Tests can be run with [tox], please ensure
-#the coverage at least stays the same before you submit a pull request.
+<!-- Contributions are very welcome. Tests can be run with [tox], please ensure
+the coverage at least stays the same before you submit a pull request. -->
 
 ## License
 
@@ -50,7 +50,7 @@ Distributed under the terms of the [MIT] license,
 
 tbd
 
-#If you encounter any problems, please [file an issue] along with a detailed description.
+<!-- If you encounter any problems, please [file an issue] along with a detailed description. -->
 
 [napari]: https://github.com/napari/napari
 [Cookiecutter]: https://github.com/audreyr/cookiecutter

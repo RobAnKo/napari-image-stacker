@@ -14,6 +14,8 @@ from magicgui import magic_factory
 
 from collections import Counter
 
+import copy
+
 
 
 @magic_factory(
@@ -22,6 +24,7 @@ from collections import Counter
     From_visible={'tooltip':"Use only visible layers ('bright eye' in layer list)"},
     To_visible={'tooltip':" Resulting layer(s) are visible"},
     Remove_original_image={'tooltip':"Remove the used layer(s) after conversion"},
+    Adjust_display_for_seg_labels={'tooltip':"If segmentation label [0,1] detected, adjust the displayed opacity, range, colormap and blending"},
     Convert_from={"choices": ["Images to Stack", "Stack to Images"],"tooltip":"Split stack(s) into images or concatenate images into stack(s)"}, 
     )
 
@@ -30,6 +33,7 @@ def image_stacker_widget(viewer: Viewer,
                          From_visible: bool=True,
                          To_visible: bool=False,
                          Remove_original_image: bool=False,
+                         Adjust_display_for_seg_labels: bool=True,
                          Convert_from="Images to Stack",
                          ):
     
@@ -64,10 +68,22 @@ def image_stacker_widget(viewer: Viewer,
     if len(layers):
         shapes, dimensions, rgb = zip(*[(l.data.shape, l.data.ndim, l.rgb) 
                                         for l in layers])
+        print(f"shapes: {shapes}.")
+        print(f"dimensions: {dimensions}.")
+        print(f"rgb: {rgb}.")
     else:
         message = "No convertible images found"
         print(message)
         return
+    
+    
+    squeezable = [1 in shape for shape in shapes]
+    if any(squeezable):
+        for i,l in enumerate(layers):
+            if squeezable[i]:
+                layers[i].data =  layers[i].data.squeeze()
+        print(f"shapes after squeeze: {[l.data.shape for l in layers]}.")
+    
     
     #see how many images of which shapes we have
     Counter_shapes = Counter(shapes)
@@ -85,13 +101,31 @@ def image_stacker_widget(viewer: Viewer,
         valid_images = [[im for im,sh in zip(layers, shapes) if sh == cand] 
                         for cand in candidates]
         
+        print(f"valid images: {valid_images}.")
+        
+        if Adjust_display_for_seg_labels:
+            labeltag = [guess_if_label(vi) for vi in valid_images]
+        else:
+            labeltag = [False for vi in valid_images]
+        
+        
+        
         #for each shape group return a stack
-        for vi in valid_images:
+        for i,vi in enumerate(valid_images):
             stackname = vi[0].name+"_stacked"
             print(f"creating stack {stackname}\n"
                   f"from {len(vi)} images.")
             meta["name"] = stackname
-            viewer.layers.append(images_to_stack(images=vi, axis=0, **meta))
+            
+            if labeltag[i]:
+                meta_vi = copy.deepcopy(meta)
+                meta_vi["opacity"] = 0.7
+                meta_vi["colormap"] = "blue"
+                meta_vi["contrast_limits"] = [0,1]
+                meta_vi["blending"] = "additive"
+            else:
+                meta_vi = copy.deepcopy(meta)
+            viewer.layers.append(images_to_stack(images=vi, axis=0, **meta_vi))
             
             if Remove_original_image:
                 for v in vi:
@@ -135,6 +169,16 @@ def image_stacker_widget(viewer: Viewer,
     
     else:
         return
+
+
+def guess_if_label(vi):
+    if vi[0].data.dtype == "bool":
+        return True
+    elif vi[0].data.dtype == "uint8" and vi[0].data.max() == 1:
+            return True
+    else:
+        return False
+
 
 @napari_hook_implementation
 def napari_experimental_provide_dock_widget():

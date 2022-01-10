@@ -16,6 +16,9 @@ from collections import Counter
 
 import copy
 
+import numpy as np
+import re
+
 
 
 @magic_factory(
@@ -59,9 +62,14 @@ def image_stacker_widget(viewer: Viewer,
     if From_visible:
         valid = [True for l in layers if l.visible]
         print(f"Using only visible layers ({sum(valid)}/{len(layers)}).")
-        layers = [l for l in layers if l.visible]
+        layers = [l for l,v in zip(layers,valid) if v]
     else:
         pass
+    
+    
+    
+    
+    
     
     #extract shapes, dimensions and rgb flags to decide which of the layers 
     #can be concatenated into a stack
@@ -112,6 +120,14 @@ def image_stacker_widget(viewer: Viewer,
         
         #for each shape group return a stack
         for i,vi in enumerate(valid_images):
+            
+            #sort according to suffix
+            #suffixes = [im.name.split("_")[-1] if "_" in im.name else "0" for im in vi]
+            suffixes = [re.search("\d+$", im.name) for im in vi]
+            sfx = [int(x[0]) if x is not None and x[0].isnumeric() else 0 for x in suffixes]
+            inds = np.argsort(sfx)
+            vi = [vi[i] for i in inds]
+            
             stackname = vi[0].name+"_stacked"
             print(f"creating stack {stackname}\n"
                   f"from {len(vi)} images.")

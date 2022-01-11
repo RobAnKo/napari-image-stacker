@@ -11,17 +11,10 @@ A plugin designed to convert multiple open layers into a stack or vice versa
 
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
 
-<!--
-Don't miss the full getting started guide to set up your new package:
-https://github.com/napari/cookiecutter-napari-plugin#getting-started
-
-and review the napari docs for plugin developers:
-https://napari.org/docs/plugins/index.html
--->
 
 ## Installation
 
-You can not yet install `napari-image-stacker` via [pip]:
+You can install `napari-image-stacker` via [pip]:
 
     pip install napari-image-stacker
 

@@ -31,7 +31,7 @@ Contributions are very welcome. Tests can be run with [tox].
 
 ## License
 
-Distributed under the terms of the [BDS3] license,
+Distributed under the terms of the [BSD-3] license,
 "napari-image-stacker" is free and open source software
 
 ## Issues

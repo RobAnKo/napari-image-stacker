@@ -60,9 +60,10 @@ def image_stacker_widget(viewer: Viewer,
     
     #decide whether only visible layers should be considered
     if From_visible:
-        valid = [True for l in layers if l.visible]
-        print(f"Using only visible layers ({sum(valid)}/{len(layers)}).")
-        layers = [l for l,v in zip(layers,valid) if v]
+        nl = len(layers)
+        layers = [l for l in layers if l.visible]
+        print(f"Using only visible layers ({len(layers)}/{nl}).")
+        print(layers)
     else:
         pass
     
@@ -76,9 +77,9 @@ def image_stacker_widget(viewer: Viewer,
     if len(layers):
         shapes, dimensions, rgb = zip(*[(l.data.shape, l.data.ndim, l.rgb) 
                                         for l in layers])
-        print(f"shapes: {shapes}.")
-        print(f"dimensions: {dimensions}.")
-        print(f"rgb: {rgb}.")
+        #print(f"shapes: {shapes}.")
+        #print(f"dimensions: {dimensions}.")
+        #print(f"rgb: {rgb}.")
     else:
         message = "No convertible images found"
         print(message)
@@ -89,8 +90,9 @@ def image_stacker_widget(viewer: Viewer,
     if any(squeezable):
         for i,l in enumerate(layers):
             if squeezable[i]:
+                print(f"We squeeze layer i (l)")
                 layers[i].data =  layers[i].data.squeeze()
-        print(f"shapes after squeeze: {[l.data.shape for l in layers]}.")
+        #print(f"shapes after squeeze: {[l.data.shape for l in layers]}.")
     
     
     #see how many images of which shapes we have
